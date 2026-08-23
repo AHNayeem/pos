@@ -1,6 +1,9 @@
 import type { Cart, CartItem, Order, OrderItem, Payment } from "@/domain/types";
 import { repositories } from "@/repositories";
 
+export { BusinessService } from "./business";
+export { BranchService } from "./branch";
+
 export class PricingService {
   static async calculateCart(items: CartItem[], discountCode?: string): Promise<Cart> {
     const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
