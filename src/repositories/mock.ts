@@ -75,7 +75,7 @@ const branches: Branch[] = [
 
 const roles: Role[] = [
   { id: "role-1", name: "owner", description: "Full access", permissions: ["*"] },
-  { id: "role-2", name: "manager", description: "Management access", permissions: ["products.read", "products.write", "orders.read", "orders.write", "reports.read", "customers.read", "suppliers.read", "purchases.write", "inventory.read", "inventory.write"] },
+  { id: "role-2", name: "manager", description: "Management access", permissions: ["products.read", "products.write", "orders.read", "orders.write", "reports.read", "customers.read", "customers.write", "suppliers.read", "purchases.write", "inventory.read", "inventory.write"] },
   { id: "role-3", name: "cashier", description: "POS access", permissions: ["pos.read", "pos.write", "orders.read", "customers.read"] },
   { id: "role-4", name: "inventory_manager", description: "Inventory access", permissions: ["products.read", "products.write", "inventory.read", "inventory.write", "purchases.read", "purchases.write"] },
   { id: "role-5", name: "accountant", description: "Accounting access", permissions: ["reports.read", "expenses.write", "payments.read"] },
