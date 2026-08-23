@@ -623,8 +623,12 @@ const shiftRepo: ShiftRepository = {
 };
 
 const taxRepo: TaxRepository = {
-  async getAll() {
-    return [...state.taxes];
+  async getAll({ active } = {}) {
+    let result = [...state.taxes];
+    if (active !== undefined) {
+      result = result.filter((t) => t.isActive === active);
+    }
+    return result;
   },
   async getById(id) {
     return state.taxes.find((t) => t.id === id) || null;

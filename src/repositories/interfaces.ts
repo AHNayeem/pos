@@ -102,7 +102,7 @@ export interface ShiftRepository {
 }
 
 export interface TaxRepository {
-  getAll(): Promise<Tax[]>;
+  getAll(filters?: { active?: boolean }): Promise<Tax[]>;
   getById(id: string): Promise<Tax | null>;
   create(tax: Omit<Tax, "id" | "createdAt" | "updatedAt">): Promise<Tax>;
   update(id: string, data: Partial<Tax>): Promise<Tax | null>;

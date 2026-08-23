@@ -20,10 +20,10 @@ export function getRolePermissions(roleName: string): string[] {
 
 const rolePermissions = new Map<string, Role>([
   ["owner", { id: "role-1", name: "owner", description: "Full access", permissions: ["*"] }],
-  ["manager", { id: "role-2", name: "manager", description: "Management access", permissions: ["products.read", "products.write", "orders.read", "orders.write", "reports.read", "customers.read", "customers.write", "suppliers.read", "purchases.write", "inventory.read", "inventory.write", "businesses.read", "businesses.write", "branches.read", "branches.write", "categories.read", "categories.write", "brands.read", "brands.write", "sales.read", "sales.write"] }],
-   ["cashier", { id: "role-3", name: "cashier", description: "POS access", permissions: ["pos.read", "pos.write", "orders.read", "customers.read"] }],
+   ["manager", { id: "role-2", name: "manager", description: "Management access", permissions: ["products.read", "products.write", "orders.read", "orders.write", "reports.read", "customers.read", "customers.write", "suppliers.read", "purchases.write", "inventory.read", "inventory.write", "businesses.read", "businesses.write", "branches.read", "branches.write", "categories.read", "categories.write", "brands.read", "brands.write", "sales.read", "sales.write", "refunds.read", "refunds.write", "returns.read", "returns.write", "shifts.read", "shifts.write", "discounts.read", "discounts.write", "promotions.read", "promotions.write", "taxes.read", "taxes.write"] }],
+   ["cashier", { id: "role-3", name: "cashier", description: "POS access", permissions: ["pos.read", "pos.write", "orders.read", "customers.read", "shifts.write"] }],
    ["inventory_manager", { id: "role-4", name: "inventory_manager", description: "Inventory access", permissions: ["products.read", "products.write", "inventory.read", "inventory.write", "purchases.read", "purchases.write", "categories.read", "categories.write", "brands.read", "brands.write"] }],
-   ["accountant", { id: "role-5", name: "accountant", description: "Accounting access", permissions: ["reports.read", "expenses.write", "payments.read", "businesses.read", "sales.read"] }],
+   ["accountant", { id: "role-5", name: "accountant", description: "Accounting access", permissions: ["reports.read", "expenses.write", "payments.read", "businesses.read", "sales.read", "refunds.read", "shifts.read", "discounts.read", "promotions.read", "taxes.read"] }],
 ]);
 
 export const POS_PERMISSIONS = {
@@ -53,6 +53,18 @@ export const POS_PERMISSIONS = {
   PAYMENTS_WRITE: "payments.write",
   SALES_READ: "sales.read",
   SALES_WRITE: "sales.write",
+  REFUNDS_READ: "refunds.read",
+  REFUNDS_WRITE: "refunds.write",
+  RETURNS_READ: "returns.read",
+  RETURNS_WRITE: "returns.write",
+  SHIFTS_READ: "shifts.read",
+  SHIFTS_WRITE: "shifts.write",
+  DISCOUNTS_READ: "discounts.read",
+  DISCOUNTS_WRITE: "discounts.write",
+  PROMOTIONS_READ: "promotions.read",
+  PROMOTIONS_WRITE: "promotions.write",
+  TAXES_READ: "taxes.read",
+  TAXES_WRITE: "taxes.write",
   BUSINESSES_READ: "businesses.read",
   BUSINESSES_WRITE: "businesses.write",
   BRANCHES_READ: "branches.read",

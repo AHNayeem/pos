@@ -13,6 +13,11 @@ export { InventoryService } from "./inventory";
 export { PurchasingService } from "./purchasing";
 export { PaymentService } from "./payments";
 export { SaleService } from "./sales";
+export { RefundService } from "./refunds";
+export { ReturnService } from "./returns";
+export { DiscountService } from "./discounts";
+export { PromotionService } from "./promotions";
+export { TaxService } from "./taxes";
 
 export class PricingService {
   static async calculateCart(items: CartItem[], discountCode?: string): Promise<Cart> {
@@ -195,6 +200,14 @@ export class PosService {
 }
 
 export class ShiftService {
+  static async getShifts(filters?: { branchId?: string; status?: string }) {
+    const shifts = await repositories.shift.getAll({
+      branchId: filters?.branchId,
+      status: filters?.status,
+    });
+    return shifts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
   static async openShift(branchId: string, userId: string, openingCash: number) {
     const existing = await repositories.shift.getActive(branchId, userId);
     if (existing) {

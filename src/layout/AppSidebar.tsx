@@ -92,6 +92,12 @@ const navItems: NavItem[] = [
       { name: "Suppliers", path: "/settings/suppliers", pro: false, permission: "suppliers.read" },
       { name: "Payments", path: "/settings/payments", pro: false, permission: "payments.read" },
       { name: "Sales", path: "/settings/sales", pro: false, permission: "sales.read" },
+      { name: "Returns", path: "/settings/returns", pro: false, permission: "returns.read" },
+      { name: "Refunds", path: "/settings/refunds", pro: false, permission: "refunds.read" },
+      { name: "Shifts", path: "/settings/shifts", pro: false, permission: "shifts.read" },
+      { name: "Discounts", path: "/settings/discounts", pro: false, permission: "discounts.read" },
+      { name: "Promotions", path: "/settings/promotions", pro: false, permission: "promotions.read" },
+      { name: "Taxes", path: "/settings/taxes", pro: false, permission: "taxes.read" },
     ],
   },
 ];
