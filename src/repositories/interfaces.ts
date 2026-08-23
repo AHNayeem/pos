@@ -24,6 +24,7 @@ import type {
   AuditLog,
   PurchaseOrder,
   StockTransfer,
+  Sale,
 } from "@/domain/types";
 
 export interface ProductRepository {
@@ -193,4 +194,13 @@ export interface StockTransferRepository {
   getById(id: string): Promise<StockTransfer | null>;
   create(transfer: Omit<StockTransfer, "id" | "createdAt" | "updatedAt">): Promise<StockTransfer>;
   update(id: string, data: Partial<StockTransfer>): Promise<StockTransfer | null>;
+}
+
+export interface SaleRepository {
+  getAll(filters?: { branchId?: string; status?: string; paymentStatus?: string; search?: string }): Promise<Sale[]>;
+  getById(id: string): Promise<Sale | null>;
+  getByOrderId(orderId: string): Promise<Sale | null>;
+  getBySaleNumber(saleNumber: string): Promise<Sale | null>;
+  create(sale: Omit<Sale, "id" | "createdAt" | "updatedAt">): Promise<Sale>;
+  update(id: string, data: Partial<Sale>): Promise<Sale | null>;
 }

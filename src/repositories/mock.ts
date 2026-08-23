@@ -24,6 +24,7 @@ import type {
   AuditLog,
   PurchaseOrder,
   StockTransfer,
+  Sale,
 } from "@/domain/types";
 import type {
   ProductRepository,
@@ -50,6 +51,7 @@ import type {
   AuditLogRepository,
   PurchaseOrderRepository,
   StockTransferRepository,
+  SaleRepository,
 } from "./interfaces";
 
 const now = () => new Date().toISOString();
@@ -164,10 +166,19 @@ const orders: Order[] = [
   { id: "ord-3", orderNumber: "POS-0003", branchId: "br-1", cashierId: "usr-4", items: [], subtotal: 90, taxAmount: 4.5, discountAmount: 0, grandTotal: 94.5, paymentStatus: "partial", paymentMethod: "cash", paidAmount: 50, changeAmount: 0, status: "completed", createdAt: now(), updatedAt: now() },
 ];
 
+const sales: Sale[] = [
+  { id: "sale-1", saleNumber: "INV-0001", orderId: "ord-1", branchId: "br-1", customerId: "cust-1", customerName: "John Doe", cashierId: "usr-4", cashierName: "Charlie Cashier", items: [], subtotal: 120, taxAmount: 6, discountAmount: 0, grandTotal: 126, paidAmount: 126, changeAmount: 0, paymentMethod: "cash", paymentStatus: "paid", status: "paid", note: "Full payment received", issuedAt: now(), dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), createdAt: now(), updatedAt: now() },
+  { id: "sale-2", saleNumber: "INV-0002", orderId: "ord-2", branchId: "br-1", customerId: "cust-2", customerName: "Jane Smith", cashierId: "usr-4", cashierName: "Charlie Cashier", items: [], subtotal: 35000, taxAmount: 3500, discountAmount: 500, grandTotal: 38000, paidAmount: 38000, changeAmount: 0, paymentMethod: "card", paymentStatus: "paid", status: "paid", note: "Visa ending 4242", issuedAt: now(), dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), createdAt: now(), updatedAt: now() },
+  { id: "sale-3", saleNumber: "INV-0003", orderId: "ord-3", branchId: "br-1", customerId: undefined, customerName: "Walk-in Customer", cashierId: "usr-4", cashierName: "Charlie Cashier", items: [], subtotal: 90, taxAmount: 4.5, discountAmount: 0, grandTotal: 94.5, paidAmount: 50, changeAmount: 0, paymentMethod: "cash", paymentStatus: "partial", status: "issued", note: "Partial payment", issuedAt: now(), dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), createdAt: now(), updatedAt: now() },
+  { id: "sale-4", saleNumber: "INV-0004", orderId: "ord-1", branchId: "br-2", customerId: "cust-1", customerName: "John Doe", cashierId: "usr-4", cashierName: "Charlie Cashier", items: [], subtotal: 120, taxAmount: 6, discountAmount: 0, grandTotal: 126, paidAmount: 126, changeAmount: 0, paymentMethod: "cash", paymentStatus: "paid", status: "paid", note: "Branch sale", issuedAt: now(), dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), createdAt: now(), updatedAt: now() },
+];
+
 const payments: Payment[] = [
-  { id: "pay-1", orderId: "ord-1", method: "cash", amount: 126, createdAt: now() },
-  { id: "pay-2", orderId: "ord-2", method: "card", amount: 38000, createdAt: now() },
-  { id: "pay-3", orderId: "ord-3", method: "cash", amount: 50, createdAt: now() },
+  { id: "pay-1", orderId: "ord-1", method: "cash", amount: 126, reference: "CASH-001", note: "Full payment", createdAt: now() },
+  { id: "pay-2", orderId: "ord-2", method: "card", amount: 38000, reference: "CARD-1234", note: "Visa ending 4242", createdAt: now() },
+  { id: "pay-3", orderId: "ord-3", method: "cash", amount: 50, reference: "CASH-002", note: "Partial payment", createdAt: now() },
+  { id: "pay-4", orderId: "ord-1", method: "cash", amount: 20, reference: "CASH-003", note: "Tip", createdAt: now() },
+  { id: "pay-5", orderId: "ord-2", method: "mobile", amount: 5000, reference: "BKASH-001", note: "bKash payment", createdAt: now() },
 ];
 
 const inventory: Inventory[] = [
@@ -289,6 +300,7 @@ type RepoState = {
   stockTransfers: StockTransfer[];
   returns: Return[];
   refunds: Refund[];
+  sales: Sale[];
   users: User[];
   roles: Role[];
   branches: Branch[];
@@ -315,6 +327,7 @@ const state: RepoState = {
   stockTransfers,
   returns,
   refunds,
+  sales,
   users,
   roles,
   branches,
@@ -900,6 +913,40 @@ const stockTransferRepo: StockTransferRepository = {
   },
 };
 
+const saleRepo: SaleRepository = {
+  async getAll(filters) {
+    let data = [...state.sales];
+    if (filters?.branchId) data = data.filter((s) => s.branchId === filters.branchId);
+    if (filters?.status) data = data.filter((s) => s.status === filters.status);
+    if (filters?.paymentStatus) data = data.filter((s) => s.paymentStatus === filters.paymentStatus);
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      data = data.filter((s) => s.saleNumber.toLowerCase().includes(q) || s.orderId.toLowerCase().includes(q) || s.customerName?.toLowerCase().includes(q));
+    }
+    return data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  },
+  async getById(id) {
+    return state.sales.find((s) => s.id === id) || null;
+  },
+  async getByOrderId(orderId) {
+    return state.sales.find((s) => s.orderId === orderId) || null;
+  },
+  async getBySaleNumber(saleNumber) {
+    return state.sales.find((s) => s.saleNumber === saleNumber) || null;
+  },
+  async create(sale) {
+    const newSale: Sale = { ...sale, id: `sale-${id()}`, createdAt: now(), updatedAt: now() };
+    state.sales.push(newSale);
+    return newSale;
+  },
+  async update(id, data) {
+    const idx = state.sales.findIndex((s) => s.id === id);
+    if (idx === -1) return null;
+    state.sales[idx] = { ...state.sales[idx], ...data, updatedAt: now() };
+    return state.sales[idx];
+  },
+};
+
 const repositories = {
   product: productRepo,
   category: categoryRepo,
@@ -925,6 +972,7 @@ const repositories = {
   auditLog: auditLogRepo,
   purchaseOrder: purchaseOrderRepo,
   stockTransfer: stockTransferRepo,
+  sale: saleRepo,
 };
 
 export { repositories, state, business, branches, users };

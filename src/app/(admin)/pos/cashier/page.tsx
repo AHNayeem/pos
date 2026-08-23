@@ -3,11 +3,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { repositories } from "@/repositories";
-import type { Product, ProductVariant } from "@/domain/types";
+import type { Customer, Product, ProductVariant } from "@/domain/types";
 import { useCartStore, useShiftStore } from "@/stores";
-import { ShiftService } from "@/services";
+import { useAuthStore } from "@/stores/auth";
+import { ShiftService, PosService } from "@/services";
 import { formatCurrency } from "@/utils/calculator";
+import { useToast } from "@/components/toast/ToastProvider";
 import Image from "next/image";
+import { Modal } from "@/components/ui/modal";
+import Input from "@/components/form/input/InputField";
+import Button from "@/components/ui/button/Button";
 
 type CartItemRow = {
   id: string;
@@ -132,23 +137,33 @@ export default function PosCashierPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "mobile" | "credit" | "voucher">("cash");
+  const [paidAmount, setPaidAmount] = useState("");
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const cart = useCartStore((s) => s.cart);
   const addItem = useCartStore((s) => s.addItem);
   const updateItemQuantity = useCartStore((s) => s.updateItemQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const clearCart = useCartStore((s) => s.clearCart);
+  const setCustomer = useCartStore((s) => s.setCustomer);
   const shift = useShiftStore((s) => s.activeShift);
   const setShift = useShiftStore((s) => s.setActiveShift);
+  const { user } = useAuthStore();
+  const { addToast } = useToast();
 
   useEffect(() => {
     let mounted = true;
-    Promise.all([repositories.product.getAll(), repositories.category.getAll()])
-      .then(([prods, cats]) => {
+    Promise.all([repositories.product.getAll(), repositories.category.getAll(), repositories.customer.getAll()])
+      .then(([prods, cats, custs]) => {
         if (!mounted) return;
         const merged = [...DEMO_PRODUCTS, ...prods];
         setProducts(merged);
         setCategories(cats.map((c) => ({ id: c.id, name: c.name })));
+        setCustomers(custs);
         setIsLoading(false);
       })
       .catch(() => {
@@ -208,22 +223,56 @@ export default function PosCashierPage() {
 
   const handleCheckout = () => {
     if (!shift) {
-      alert("Please open a shift before checkout.");
+      addToast("Please open a shift before checkout.", "error");
       return;
     }
     if (cart.items.length === 0) {
-      alert("Cart is empty.");
+      addToast("Cart is empty.", "error");
       return;
     }
-    alert("Checkout flow will be implemented in Phase 9 (POS/Cashier).");
+    setSelectedCustomerId(cart.customerId || "");
+    setPaidAmount(String(Math.ceil(cart.grandTotal)));
+    setPaymentMethod("cash");
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleConfirmCheckout = async () => {
+    if (!user || !shift) return;
+    const paid = parseFloat(paidAmount);
+    if (isNaN(paid) || paid < 0) {
+      addToast("Please enter a valid paid amount.", "error");
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const order = await PosService.checkout(
+        cart,
+        paymentMethod,
+        paid,
+        user.id,
+        user.branchId,
+        selectedCustomerId || undefined
+      );
+      clearCart();
+      setCustomer(undefined);
+      setIsPaymentModalOpen(false);
+      setPaidAmount("");
+      setSelectedCustomerId("");
+      addToast(`Order ${order.orderNumber} placed successfully!`, "success");
+    } catch {
+      addToast("Failed to place order. Please try again.", "error");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleOpenShift = async () => {
     try {
       const shiftData = await ShiftService.openShift("br-1", "usr-4", 5000);
       setShift(shiftData);
+      addToast("Shift opened successfully", "success");
     } catch {
-      alert("Could not open shift. You may already have an open shift.");
+      addToast("Could not open shift. You may already have an open shift.", "error");
     }
   };
 
@@ -483,15 +532,86 @@ export default function PosCashierPage() {
             <div className="p-5 pt-0">
               <button
                 onClick={handleCheckout}
-                disabled={!shift || cart.items.length === 0}
+                disabled={!shift || cart.items.length === 0 || isProcessing}
                 className="flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Place Order
+                {isProcessing ? "Processing..." : "Place Order"}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} className="sm:max-w-lg">
+        <div className="p-6">
+          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Checkout</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Method</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["cash", "card", "mobile", "credit", "voucher"] as const).map((method) => (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
+                    className={`rounded-lg border px-3 py-2 text-sm font-medium capitalize transition ${
+                      paymentMethod === method
+                        ? "border-blue-600 bg-blue-600 text-white"
+                        : "border-gray-200 bg-white text-gray-700 hover:border-blue-300 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                    }`}
+                  >
+                    {method}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label htmlFor="customer" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Customer (Optional)</label>
+              <select
+                id="customer"
+                value={selectedCustomerId}
+                onChange={(e) => setSelectedCustomerId(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none dark:border-gray-800 dark:bg-gray-900 dark:text-white"
+              >
+                <option value="">Walk-in Customer</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name} {customer.phone ? `(${customer.phone})` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="paidAmount" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Paid Amount</label>
+              <Input
+                type="number"
+                id="paidAmount"
+                value={paidAmount}
+                onChange={(e) => setPaidAmount(e.target.value)}
+                min="0"
+                step={0.01}
+                required
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Total due: {formatCurrency(total)}
+              </p>
+              {parseFloat(paidAmount) > 0 && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Change: {formatCurrency(Math.max(0, parseFloat(paidAmount) - total))}
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => setIsPaymentModalOpen(false)} disabled={isProcessing}>
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmCheckout} disabled={isProcessing}>
+                {isProcessing ? "Processing..." : "Confirm Payment"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

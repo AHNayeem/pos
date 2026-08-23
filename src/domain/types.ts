@@ -203,6 +203,32 @@ export interface Order {
   updatedAt: string;
 }
 
+export interface Sale {
+  id: string;
+  saleNumber: string;
+  orderId: string;
+  branchId: string;
+  customerId?: string;
+  customerName?: string;
+  cashierId: string;
+  cashierName?: string;
+  items: OrderItem[];
+  subtotal: number;
+  taxAmount: number;
+  discountAmount: number;
+  grandTotal: number;
+  paidAmount: number;
+  changeAmount: number;
+  paymentMethod?: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  status: "draft" | "issued" | "paid" | "overdue" | "cancelled";
+  note?: string;
+  issuedAt?: string;
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Payment {
   id: string;
   orderId: string;

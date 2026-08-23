@@ -24,4 +24,5 @@ export type {
   AuditLogRepository,
   PurchaseOrderRepository,
   StockTransferRepository,
+  SaleRepository,
 } from "./interfaces";
