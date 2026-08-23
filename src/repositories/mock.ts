@@ -197,7 +197,58 @@ const expenses: Expense[] = [
 ];
 
 const purchaseOrders: PurchaseOrder[] = [
-  { id: "po-1", poNumber: "PO-0001", branchId: "br-1", supplierId: "sup-1", items: [], subtotal: 10000, taxAmount: 500, grandTotal: 10500, status: "received", createdBy: "usr-5", receivedBy: "usr-5", receivedAt: now(), createdAt: now(), updatedAt: now() },
+  {
+    id: "po-1",
+    poNumber: "PO-0001",
+    branchId: "br-1",
+    supplierId: "sup-1",
+    items: [
+      { id: "poi-1", productVariantId: "var-1", productName: "Coca-Cola 500ml", variantName: "500ml", quantity: 200, unitCost: 20, lineTotal: 4000 },
+      { id: "poi-2", productVariantId: "var-3", productName: "Pepsi 500ml", variantName: "500ml", quantity: 200, unitCost: 20, lineTotal: 4000 },
+    ],
+    subtotal: 8000,
+    taxAmount: 400,
+    grandTotal: 8400,
+    status: "received",
+    createdBy: "usr-5",
+    receivedBy: "usr-5",
+    receivedAt: now(),
+    createdAt: now(),
+    updatedAt: now(),
+  },
+  {
+    id: "po-2",
+    poNumber: "PO-0002",
+    branchId: "br-1",
+    supplierId: "sup-2",
+    items: [
+      { id: "poi-3", productVariantId: "var-5", productName: "Fresh Milk 1L", variantName: "1L", quantity: 100, unitCost: 60, lineTotal: 6000 },
+    ],
+    subtotal: 6000,
+    taxAmount: 300,
+    grandTotal: 6300,
+    status: "ordered",
+    createdBy: "usr-5",
+    createdAt: now(),
+    updatedAt: now(),
+  },
+  {
+    id: "po-3",
+    poNumber: "PO-0003",
+    branchId: "br-1",
+    supplierId: "sup-3",
+    items: [
+      { id: "poi-4", productVariantId: "var-6", productName: "Samsung Phone", variantName: "128GB", quantity: 10, unitCost: 25000, lineTotal: 250000 },
+      { id: "poi-5", productVariantId: "var-7", productName: "T-Shirt", variantName: "M", quantity: 50, unitCost: 150, lineTotal: 7500 },
+    ],
+    subtotal: 257500,
+    taxAmount: 25750,
+    grandTotal: 283250,
+    status: "draft",
+    createdBy: "usr-2",
+    createdAt: now(),
+    updatedAt: now(),
+  },
 ];
 
 const notifications: Notification[] = [

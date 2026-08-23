@@ -10,6 +10,7 @@ export { BrandService } from "./brand";
 export { CustomerService } from "./customer";
 export { SupplierService } from "./supplier";
 export { InventoryService } from "./inventory";
+export { PurchasingService } from "./purchasing";
 
 export class PricingService {
   static async calculateCart(items: CartItem[], discountCode?: string): Promise<Cart> {
