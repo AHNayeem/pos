@@ -3,6 +3,9 @@ import { repositories } from "@/repositories";
 
 export { BusinessService } from "./business";
 export { BranchService } from "./branch";
+export { ProductService } from "./product";
+export { CategoryService } from "./category";
+export { BrandService } from "./brand";
 
 export class PricingService {
   static async calculateCart(items: CartItem[], discountCode?: string): Promise<Cart> {

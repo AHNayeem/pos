@@ -298,16 +298,33 @@ const productRepo: ProductRepository = {
       createdAt: now(),
       updatedAt: now(),
     };
+    newProduct.variants.forEach((v) => {
+      const variant: ProductVariant = { ...v, id: `var-${id()}`, productId: newProduct.id, createdAt: now(), updatedAt: now() };
+      variants.push(variant);
+    });
     state.products.push(newProduct);
     return newProduct;
   },
   async update(id, data) {
     const idx = state.products.findIndex((p) => p.id === id);
     if (idx === -1) return null;
+    const updatedVariants = data.variants;
     state.products[idx] = { ...state.products[idx], ...data, updatedAt: now() };
+    if (updatedVariants) {
+      for (let i = variants.length - 1; i >= 0; i--) {
+        if (variants[i].productId === id) variants.splice(i, 1);
+      }
+      updatedVariants.forEach((v) => {
+        const variant: ProductVariant = { ...v, id: v.id || `var-${Math.random().toString(36).slice(2, 11)}`, productId: id, createdAt: now(), updatedAt: now() };
+        variants.push(variant);
+      });
+    }
     return state.products[idx];
   },
   async archive(id) {
+    for (let i = variants.length - 1; i >= 0; i--) {
+      if (variants[i].productId === id) variants.splice(i, 1);
+    }
     state.products = state.products.filter((p) => p.id !== id);
   },
 };
