@@ -1,5 +1,6 @@
 import { repositories } from "@/repositories";
 import type { Refund } from "@/domain/types";
+import { InventoryService } from "./inventory";
 
 type RefundServiceError = { code: string; message: string };
 
@@ -33,12 +34,25 @@ export class RefundService {
     if (!order) {
       throw { code: "NOT_FOUND", message: "Order not found" } as RefundServiceError;
     }
+
+    const orderItem = order.items.find((item) => item.id === input.orderItemId);
+    if (!orderItem) {
+      throw { code: "NOT_FOUND", message: "Order item not found" } as RefundServiceError;
+    }
+
+    const existingRefunds = await repositories.refund.getAll({ orderId: input.orderId, status: "approved" });
+    const alreadyRefundedQty = existingRefunds.reduce((sum, r) => sum + (r.orderItemId === input.orderItemId ? r.quantity : 0), 0);
+    if (alreadyRefundedQty + input.quantity > orderItem.quantity) {
+      throw { code: "INVALID_QUANTITY", message: "Refund quantity exceeds ordered quantity" } as RefundServiceError;
+    }
+
     if (input.quantity <= 0) {
       throw { code: "INVALID_QUANTITY", message: "Refund quantity must be greater than zero" } as RefundServiceError;
     }
     if (input.amount <= 0) {
       throw { code: "INVALID_AMOUNT", message: "Refund amount must be greater than zero" } as RefundServiceError;
     }
+
     return repositories.refund.create({
       orderId: input.orderId,
       orderItemId: input.orderItemId,
@@ -64,6 +78,24 @@ export class RefundService {
       update.processedBy = processedBy;
       update.processedAt = new Date().toISOString();
     }
-    return repositories.refund.update(refundId, update);
+
+    const updated = await repositories.refund.update(refundId, update);
+
+    if (updated && status === "approved") {
+      const order = await repositories.order.getById(refund.orderId);
+      if (order) {
+        await InventoryService.adjustStock(
+          refund.productVariantId,
+          order.branchId,
+          refund.quantity,
+          "return",
+          processedBy || order.cashierId,
+          refund.id,
+          `Refund for order ${order.orderNumber}`
+        );
+      }
+    }
+
+    return updated;
   }
 }

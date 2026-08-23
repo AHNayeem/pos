@@ -14,6 +14,8 @@ import type {
   Discount,
   Promotion,
   Expense,
+  LoyaltySettings,
+  StoreCreditTransaction,
   Refund,
   Return,
   User,
@@ -25,6 +27,9 @@ import type {
   PurchaseOrder,
   StockTransfer,
   Sale,
+  Account,
+  Transaction,
+  SystemSettings,
 } from "@/domain/types";
 
 export interface ProductRepository {
@@ -129,6 +134,17 @@ export interface ExpenseRepository {
   create(expense: Omit<Expense, "id" | "createdAt">): Promise<Expense>;
 }
 
+export interface LoyaltyRepository {
+  getSettings(): Promise<LoyaltySettings | null>;
+  updateSettings(data: Partial<LoyaltySettings>): Promise<LoyaltySettings | null>;
+}
+
+export interface StoreCreditRepository {
+  getAll(filters?: { customerId?: string; type?: string; from?: string; to?: string }): Promise<StoreCreditTransaction[]>;
+  getById(id: string): Promise<StoreCreditTransaction | null>;
+  create(transaction: Omit<StoreCreditTransaction, "id" | "createdAt">): Promise<StoreCreditTransaction>;
+}
+
 export interface RefundRepository {
   getAll(filters?: { orderId?: string; status?: string }): Promise<Refund[]>;
   getById(id: string): Promise<Refund | null>;
@@ -179,6 +195,7 @@ export interface NotificationRepository {
 
 export interface AuditLogRepository {
   getAll(filters?: { entity?: string; entityId?: string; actorId?: string; from?: string; to?: string }): Promise<AuditLog[]>;
+  getById(id: string): Promise<AuditLog | null>;
   create(log: Omit<AuditLog, "id" | "createdAt">): Promise<AuditLog>;
 }
 
@@ -203,4 +220,19 @@ export interface SaleRepository {
   getBySaleNumber(saleNumber: string): Promise<Sale | null>;
   create(sale: Omit<Sale, "id" | "createdAt" | "updatedAt">): Promise<Sale>;
   update(id: string, data: Partial<Sale>): Promise<Sale | null>;
+}
+
+export interface AccountingRepository {
+  getAllAccounts(filters?: { type?: Account["type"]; branchId?: string }): Promise<Account[]>;
+  getAccountById(id: string): Promise<Account | null>;
+  createAccount(account: Omit<Account, "id" | "createdAt" | "updatedAt">): Promise<Account>;
+  updateAccount(id: string, data: Partial<Account>): Promise<Account | null>;
+  getAllTransactions(filters?: { accountId?: string; type?: Transaction["type"]; referenceType?: Transaction["referenceType"]; from?: string; to?: string }): Promise<Transaction[]>;
+  getTransactionById(id: string): Promise<Transaction | null>;
+  createTransaction(transaction: Omit<Transaction, "id" | "createdAt">): Promise<Transaction>;
+}
+
+export interface SystemSettingsRepository {
+  getSettings(): Promise<SystemSettings | null>;
+  updateSettings(data: Partial<SystemSettings>): Promise<SystemSettings | null>;
 }

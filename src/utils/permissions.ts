@@ -20,10 +20,10 @@ export function getRolePermissions(roleName: string): string[] {
 
 const rolePermissions = new Map<string, Role>([
   ["owner", { id: "role-1", name: "owner", description: "Full access", permissions: ["*"] }],
-   ["manager", { id: "role-2", name: "manager", description: "Management access", permissions: ["products.read", "products.write", "orders.read", "orders.write", "reports.read", "customers.read", "customers.write", "suppliers.read", "purchases.write", "inventory.read", "inventory.write", "businesses.read", "businesses.write", "branches.read", "branches.write", "categories.read", "categories.write", "brands.read", "brands.write", "sales.read", "sales.write", "refunds.read", "refunds.write", "returns.read", "returns.write", "shifts.read", "shifts.write", "discounts.read", "discounts.write", "promotions.read", "promotions.write", "taxes.read", "taxes.write"] }],
+    ["manager", { id: "role-2", name: "manager", description: "Management access", permissions: ["products.read", "products.write", "orders.read", "orders.write", "reports.read", "reports.write", "customers.read", "customers.write", "suppliers.read", "purchases.write", "inventory.read", "inventory.write", "businesses.read", "businesses.write", "branches.read", "branches.write", "categories.read", "categories.write", "brands.read", "brands.write", "sales.read", "sales.write", "refunds.read", "refunds.write", "returns.read", "returns.write", "shifts.read", "shifts.write", "discounts.read", "discounts.write", "promotions.read", "promotions.write", "taxes.read", "taxes.write", "expenses.read", "expenses.write", "loyalty.read", "loyalty.write", "storeCredit.read", "storeCredit.write", "stockTransfers.read", "stockTransfers.write", "accounting.read", "accounting.write", "notifications.read", "notifications.write", "audit.read", "audit.write", "systemSettings.read", "systemSettings.write"] }],
    ["cashier", { id: "role-3", name: "cashier", description: "POS access", permissions: ["pos.read", "pos.write", "orders.read", "customers.read", "shifts.write"] }],
-   ["inventory_manager", { id: "role-4", name: "inventory_manager", description: "Inventory access", permissions: ["products.read", "products.write", "inventory.read", "inventory.write", "purchases.read", "purchases.write", "categories.read", "categories.write", "brands.read", "brands.write"] }],
-   ["accountant", { id: "role-5", name: "accountant", description: "Accounting access", permissions: ["reports.read", "expenses.write", "payments.read", "businesses.read", "sales.read", "refunds.read", "shifts.read", "discounts.read", "promotions.read", "taxes.read"] }],
+    ["inventory_manager", { id: "role-4", name: "inventory_manager", description: "Inventory access", permissions: ["products.read", "products.write", "inventory.read", "inventory.write", "purchases.read", "purchases.write", "categories.read", "categories.write", "brands.read", "brands.write", "stockTransfers.read", "stockTransfers.write"] }],
+    ["accountant", { id: "role-5", name: "accountant", description: "Accounting access", permissions: ["reports.read", "expenses.read", "expenses.write", "payments.read", "businesses.read", "sales.read", "refunds.read", "shifts.read", "discounts.read", "promotions.read", "taxes.read", "accounting.read", "accounting.write", "notifications.read", "audit.read"] }],
 ]);
 
 export const POS_PERMISSIONS = {
@@ -49,6 +49,20 @@ export const POS_PERMISSIONS = {
   SUPPLIERS_WRITE: "suppliers.write",
   EXPENSES_READ: "expenses.read",
   EXPENSES_WRITE: "expenses.write",
+  LOYALTY_READ: "loyalty.read",
+  LOYALTY_WRITE: "loyalty.write",
+   STORE_CREDIT_READ: "storeCredit.read",
+  STORE_CREDIT_WRITE: "storeCredit.write",
+  STOCK_TRANSFERS_READ: "stockTransfers.read",
+  STOCK_TRANSFERS_WRITE: "stockTransfers.write",
+  ACCOUNTING_READ: "accounting.read",
+  ACCOUNTING_WRITE: "accounting.write",
+  NOTIFICATIONS_READ: "notifications.read",
+  NOTIFICATIONS_WRITE: "notifications.write",
+  AUDIT_READ: "audit.read",
+  AUDIT_WRITE: "audit.write",
+  SYSTEM_SETTINGS_READ: "systemSettings.read",
+  SYSTEM_SETTINGS_WRITE: "systemSettings.write",
   PAYMENTS_READ: "payments.read",
   PAYMENTS_WRITE: "payments.write",
   SALES_READ: "sales.read",

@@ -2,6 +2,7 @@ import { repositories } from "@/repositories";
 import type { PurchaseOrder, PurchaseOrderItem } from "@/domain/types";
 import { InventoryService } from "./inventory";
 import { SupplierService } from "./supplier";
+import { AccountingService } from "./accounting";
 
 type PurchasingServiceError = { code: string; message: string };
 
@@ -170,6 +171,21 @@ export class PurchasingService {
 
     if (!updated) {
       throw { code: "UPDATE_FAILED", message: "Failed to update purchase order after receiving" } as PurchasingServiceError;
+    }
+
+    if (newStatus === "received" || newStatus === "partial") {
+      const payableAccounts = await AccountingService.getAccounts({ type: "payable", branchId: po.branchId });
+      if (payableAccounts.length > 0) {
+        await AccountingService.createTransaction({
+          accountId: payableAccounts[0].id,
+          type: "credit",
+          amount: po.grandTotal,
+          referenceId: po.id,
+          referenceType: "order",
+          note: `Purchase order ${po.poNumber} received`,
+          actorId: input.receivedBy,
+        });
+      }
     }
 
     return updated;

@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+    subItems: [{ name: "POS Dashboard", path: "/pos", pro: false }],
   },
   {
     icon: <BoxCubeIcon />,
@@ -95,9 +95,18 @@ const navItems: NavItem[] = [
       { name: "Returns", path: "/settings/returns", pro: false, permission: "returns.read" },
       { name: "Refunds", path: "/settings/refunds", pro: false, permission: "refunds.read" },
       { name: "Shifts", path: "/settings/shifts", pro: false, permission: "shifts.read" },
+      { name: "Reports & Analytics", path: "/settings/reports", pro: false, permission: "reports.read" },
       { name: "Discounts", path: "/settings/discounts", pro: false, permission: "discounts.read" },
       { name: "Promotions", path: "/settings/promotions", pro: false, permission: "promotions.read" },
       { name: "Taxes", path: "/settings/taxes", pro: false, permission: "taxes.read" },
+      { name: "Expenses", path: "/settings/expenses", pro: false, permission: "expenses.read" },
+      { name: "Loyalty", path: "/settings/loyalty", pro: false, permission: "loyalty.read" },
+      { name: "Store Credit", path: "/settings/store-credit", pro: false, permission: "storeCredit.read" },
+      { name: "Stock Transfers", path: "/settings/stock-transfers", pro: false, permission: "stockTransfers.read" },
+      { name: "Accounting", path: "/settings/accounting", pro: false, permission: "accounting.read" },
+      { name: "Notifications", path: "/settings/notifications", pro: false, permission: "notifications.read" },
+      { name: "Audit Log", path: "/settings/audit", pro: false, permission: "audit.read" },
+      { name: "System Settings", path: "/settings/system", pro: false, permission: "systemSettings.read" },
     ],
   },
 ];

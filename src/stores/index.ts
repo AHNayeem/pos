@@ -32,17 +32,27 @@ export const useCartStore = create<CartStore>((set, get) => ({
       items = current.items.map((i, idx) => {
         if (idx === existingIndex) {
           const newQty = i.quantity + item.quantity;
-          const lineTotal = i.unitPrice * newQty * (1 + i.taxRate / 100) - (i.discountType === "percentage" ? (i.unitPrice * newQty * i.discount) / 100 : i.discount);
+          const lineSubtotal = i.unitPrice * newQty;
+          const lineDiscount = i.discountType === "percentage" ? (lineSubtotal * i.discount) / 100 : i.discount;
+          const taxableAmount = Math.max(0, lineSubtotal - lineDiscount);
+          const lineTotal = taxableAmount + (taxableAmount * i.taxRate) / 100;
           return { ...i, quantity: newQty, lineTotal };
         }
         return i;
       });
     } else {
-      const lineTotal = item.unitPrice * item.quantity * (1 + item.taxRate / 100) - (item.discountType === "percentage" ? (item.unitPrice * item.quantity * item.discount) / 100 : item.discount);
+      const lineSubtotal = item.unitPrice * item.quantity;
+      const lineDiscount = item.discountType === "percentage" ? (lineSubtotal * item.discount) / 100 : item.discount;
+      const taxableAmount = Math.max(0, lineSubtotal - lineDiscount);
+      const lineTotal = taxableAmount + (taxableAmount * item.taxRate) / 100;
       items = [...current.items, { ...item, id: `ci-${Math.random().toString(36).slice(2, 11)}`, lineTotal }];
     }
     const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-    const taxAmount = items.reduce((sum, i) => sum + (i.lineTotal - (i.unitPrice * i.quantity - (i.discountType === "percentage" ? (i.unitPrice * i.quantity * i.discount) / 100 : i.discount))), 0);
+    const taxAmount = items.reduce((sum, i) => {
+      const lineSub = i.unitPrice * i.quantity;
+      const lineDisc = i.discountType === "percentage" ? (lineSub * i.discount) / 100 : i.discount;
+      return sum + (Math.max(0, lineSub - lineDisc) * i.taxRate) / 100;
+    }, 0);
     const discountAmount = current.discountAmount;
     const grandTotal = Math.max(0, subtotal - discountAmount + taxAmount);
     set({
@@ -62,20 +72,31 @@ export const useCartStore = create<CartStore>((set, get) => ({
     if (quantity <= 0) {
       const items = current.items.filter((i) => i.id !== itemId);
       const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-      const taxAmount = items.reduce((sum, i) => sum + (i.lineTotal - (i.unitPrice * i.quantity - (i.discountType === "percentage" ? (i.unitPrice * i.quantity * i.discount) / 100 : i.discount))), 0);
+      const taxAmount = items.reduce((sum, i) => {
+        const lineSub = i.unitPrice * i.quantity;
+        const lineDisc = i.discountType === "percentage" ? (lineSub * i.discount) / 100 : i.discount;
+        return sum + (Math.max(0, lineSub - lineDisc) * i.taxRate) / 100;
+      }, 0);
       const grandTotal = Math.max(0, subtotal - current.discountAmount + taxAmount);
       set({ cart: { ...current, items, subtotal, taxAmount, discountAmount: current.discountAmount, grandTotal, updatedAt: new Date().toISOString() } });
       return;
     }
     const items = current.items.map((i) => {
       if (i.id === itemId) {
-        const lineTotal = i.unitPrice * quantity * (1 + i.taxRate / 100) - (i.discountType === "percentage" ? (i.unitPrice * quantity * i.discount) / 100 : i.discount);
+        const lineSubtotal = i.unitPrice * quantity;
+        const lineDiscount = i.discountType === "percentage" ? (lineSubtotal * i.discount) / 100 : i.discount;
+        const taxableAmount = Math.max(0, lineSubtotal - lineDiscount);
+        const lineTotal = taxableAmount + (taxableAmount * i.taxRate) / 100;
         return { ...i, quantity, lineTotal };
       }
       return i;
     });
     const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-    const taxAmount = items.reduce((sum, i) => sum + (i.lineTotal - (i.unitPrice * i.quantity - (i.discountType === "percentage" ? (i.unitPrice * i.quantity * i.discount) / 100 : i.discount))), 0);
+    const taxAmount = items.reduce((sum, i) => {
+      const lineSub = i.unitPrice * i.quantity;
+      const lineDisc = i.discountType === "percentage" ? (lineSub * i.discount) / 100 : i.discount;
+      return sum + (Math.max(0, lineSub - lineDisc) * i.taxRate) / 100;
+    }, 0);
     const grandTotal = Math.max(0, subtotal - current.discountAmount + taxAmount);
     set({ cart: { ...current, items, subtotal, taxAmount, discountAmount: current.discountAmount, grandTotal, updatedAt: new Date().toISOString() } });
   },
@@ -83,7 +104,11 @@ export const useCartStore = create<CartStore>((set, get) => ({
     const current = get().cart;
     const items = current.items.filter((i) => i.id !== itemId);
     const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-    const taxAmount = items.reduce((sum, i) => sum + (i.lineTotal - (i.unitPrice * i.quantity - (i.discountType === "percentage" ? (i.unitPrice * i.quantity * i.discount) / 100 : i.discount))), 0);
+    const taxAmount = items.reduce((sum, i) => {
+      const lineSub = i.unitPrice * i.quantity;
+      const lineDisc = i.discountType === "percentage" ? (lineSub * i.discount) / 100 : i.discount;
+      return sum + (Math.max(0, lineSub - lineDisc) * i.taxRate) / 100;
+    }, 0);
     const grandTotal = Math.max(0, subtotal - current.discountAmount + taxAmount);
     set({ cart: { ...current, items, subtotal, taxAmount, discountAmount: current.discountAmount, grandTotal, updatedAt: new Date().toISOString() } });
   },

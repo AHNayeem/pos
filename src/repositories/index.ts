@@ -14,6 +14,8 @@ export type {
   DiscountRepository,
   PromotionRepository,
   ExpenseRepository,
+  LoyaltyRepository,
+  StoreCreditRepository,
   RefundRepository,
   ReturnRepository,
   UserRepository,
@@ -25,4 +27,6 @@ export type {
   PurchaseOrderRepository,
   StockTransferRepository,
   SaleRepository,
+  AccountingRepository,
+  SystemSettingsRepository,
 } from "./interfaces";

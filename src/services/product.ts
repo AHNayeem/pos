@@ -25,6 +25,21 @@ export class ProductService {
     if (existing.some((p) => p.name.toLowerCase() === input.name.toLowerCase())) {
       throw { code: "DUPLICATE_NAME", message: "A product with this name already exists" } as ProductServiceError;
     }
+
+    for (const variant of input.variants) {
+      const allVariants = await repositories.product.getAll();
+      const duplicateSku = allVariants.some((p) => p.variants.some((v) => v.sku === variant.sku));
+      if (duplicateSku) {
+        throw { code: "DUPLICATE_SKU", message: `SKU ${variant.sku} already exists` } as ProductServiceError;
+      }
+      if (variant.barcode) {
+        const duplicateBarcode = allVariants.some((p) => p.variants.some((v) => v.barcode && v.barcode === variant.barcode));
+        if (duplicateBarcode) {
+          throw { code: "DUPLICATE_BARCODE", message: `Barcode ${variant.barcode} already exists` } as ProductServiceError;
+        }
+      }
+    }
+
     return repositories.product.create(input);
   }
 
@@ -33,6 +48,24 @@ export class ProductService {
     if (!updated) {
       throw { code: "NOT_FOUND", message: "Product not found" } as ProductServiceError;
     }
+
+    if (data.variants) {
+      const allVariants = await repositories.product.getAll();
+      const otherProducts = allVariants.filter((p) => p.id !== productId);
+      for (const variant of data.variants) {
+        const duplicateSku = otherProducts.some((p) => p.variants.some((v) => v.sku === variant.sku));
+        if (duplicateSku) {
+          throw { code: "DUPLICATE_SKU", message: `SKU ${variant.sku} already exists` } as ProductServiceError;
+        }
+        if (variant.barcode) {
+          const duplicateBarcode = otherProducts.some((p) => p.variants.some((v) => v.barcode && v.barcode === variant.barcode));
+          if (duplicateBarcode) {
+            throw { code: "DUPLICATE_BARCODE", message: `Barcode ${variant.barcode} already exists` } as ProductServiceError;
+          }
+        }
+      }
+    }
+
     return updated;
   }
 

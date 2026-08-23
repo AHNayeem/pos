@@ -435,6 +435,69 @@ export interface StockTransfer {
   updatedAt: string;
 }
 
+export interface LoyaltySettings {
+  id: string;
+  pointsPerCurrency: number;
+  redemptionRate: number;
+  expirationDays: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoreCreditTransaction {
+  id: string;
+  customerId: string;
+  amount: number;
+  type: "issued" | "redeemed" | "adjusted" | "expired";
+  note?: string;
+  reference?: string;
+  createdAt: string;
+}
+
+export interface SystemSettings {
+  id: string;
+  receiptShowLogo: boolean;
+  receiptFooter: string;
+  receiptShowTax: boolean;
+  posRequireCustomer: boolean;
+  posAllowHoldOrders: boolean;
+  posDefaultPaymentMethod: PaymentMethod;
+  dateFormat: string;
+  timeFormat: "12h" | "24h";
+  timezone: string;
+  currency: string;
+  currencySymbol: string;
+  updatedAt: string;
+}
+
+export type AccountType = "receivable" | "payable" | "cash" | "bank";
+export type TransactionType = "debit" | "credit";
+export type TransactionReferenceType = "order" | "payment" | "expense" | "transfer" | "adjustment" | "opening_balance";
+
+export interface Account {
+  id: string;
+  name: string;
+  type: AccountType;
+  branchId: string;
+  balance: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Transaction {
+  id: string;
+  accountId: string;
+  type: TransactionType;
+  amount: number;
+  referenceId?: string;
+  referenceType?: TransactionReferenceType;
+  note?: string;
+  actorId: string;
+  createdAt: string;
+}
+
 export type TableColumn<T> = {
   key: keyof T;
   label: string;

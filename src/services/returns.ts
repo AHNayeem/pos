@@ -1,5 +1,6 @@
 import { repositories } from "@/repositories";
 import type { Return } from "@/domain/types";
+import { InventoryService } from "./inventory";
 
 type ReturnServiceError = { code: string; message: string };
 
@@ -37,6 +38,17 @@ export class ReturnService {
       if (item.quantity <= 0) {
         throw { code: "INVALID_QUANTITY", message: "Return quantity must be greater than zero" } as ReturnServiceError;
       }
+      const orderItem = order.items.find((oi) => oi.productVariantId === item.productVariantId);
+      if (!orderItem) {
+        throw { code: "INVALID_ITEM", message: `Product variant ${item.productVariantId} not found in order` } as ReturnServiceError;
+      }
+      const existingReturns = await repositories.return.getAll({ orderId: input.orderId, status: "completed" });
+      const alreadyReturnedQty = existingReturns.reduce((sum, r) => {
+        return sum + r.items.filter((ri) => ri.productVariantId === item.productVariantId).reduce((q, ri) => q + ri.quantity, 0);
+      }, 0);
+      if (alreadyReturnedQty + item.quantity > orderItem.quantity) {
+        throw { code: "INVALID_QUANTITY", message: `Return quantity for ${orderItem.productName} exceeds ordered quantity` } as ReturnServiceError;
+      }
     }
     return repositories.return.create({
       orderId: input.orderId,
@@ -52,9 +64,29 @@ export class ReturnService {
     if (!returnRecord) {
       throw { code: "NOT_FOUND", message: "Return not found" } as ReturnServiceError;
     }
-    return repositories.return.update(returnId, {
+
+    const updated = await repositories.return.update(returnId, {
       status,
       updatedAt: new Date().toISOString(),
     });
+
+    if (updated && status === "completed") {
+      const order = await repositories.order.getById(returnRecord.orderId);
+      if (order) {
+        for (const item of returnRecord.items) {
+          await InventoryService.adjustStock(
+            item.productVariantId,
+            order.branchId,
+            item.quantity,
+            "return",
+            order.cashierId,
+            returnRecord.id,
+            `Return for order ${order.orderNumber}`
+          );
+        }
+      }
+    }
+
+    return updated;
   }
 }

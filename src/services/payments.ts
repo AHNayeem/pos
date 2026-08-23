@@ -1,5 +1,6 @@
 import { repositories } from "@/repositories";
-import type { Payment } from "@/domain/types";
+import type { Payment, PaymentStatus } from "@/domain/types";
+import { AccountingService } from "./accounting";
 
 type PaymentServiceError = { code: string; message: string };
 
@@ -34,12 +35,41 @@ export class PaymentService {
     if (input.amount <= 0) {
       throw { code: "INVALID_AMOUNT", message: "Payment amount must be greater than zero" } as PaymentServiceError;
     }
-    return repositories.payment.create({
+
+    const existingPayments = await repositories.payment.getAll({ orderId: input.orderId });
+    const totalPaid = existingPayments.reduce((sum, p) => sum + p.amount, 0);
+    const newTotalPaid = totalPaid + input.amount;
+    const paymentStatus: PaymentStatus = newTotalPaid >= order.grandTotal ? "paid" : "partial";
+
+    const payment = await repositories.payment.create({
       orderId: input.orderId,
       method: input.method,
       amount: input.amount,
       reference: input.reference,
       note: input.note,
     });
+
+    await repositories.order.update(input.orderId, {
+      paymentStatus,
+      paidAmount: newTotalPaid,
+      updatedAt: new Date().toISOString(),
+    });
+
+    if (input.method === "cash") {
+      const cashAccounts = await AccountingService.getAccounts({ type: "cash", branchId: order.branchId });
+      if (cashAccounts.length > 0) {
+        await AccountingService.createTransaction({
+          accountId: cashAccounts[0].id,
+          type: "debit",
+          amount: input.amount,
+          referenceId: input.orderId,
+          referenceType: "payment",
+          note: `Cash payment for order ${order.orderNumber}`,
+          actorId: order.cashierId,
+        });
+      }
+    }
+
+    return payment;
   }
 }

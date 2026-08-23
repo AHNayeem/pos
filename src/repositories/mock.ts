@@ -14,6 +14,8 @@ import type {
   Discount,
   Promotion,
   Expense,
+  LoyaltySettings,
+  StoreCreditTransaction,
   Refund,
   Return,
   User,
@@ -25,6 +27,9 @@ import type {
   PurchaseOrder,
   StockTransfer,
   Sale,
+  Account,
+  Transaction,
+  SystemSettings,
 } from "@/domain/types";
 import type {
   ProductRepository,
@@ -41,6 +46,8 @@ import type {
   DiscountRepository,
   PromotionRepository,
   ExpenseRepository,
+  LoyaltyRepository,
+  StoreCreditRepository,
   RefundRepository,
   ReturnRepository,
   UserRepository,
@@ -52,6 +59,8 @@ import type {
   PurchaseOrderRepository,
   StockTransferRepository,
   SaleRepository,
+  AccountingRepository,
+  SystemSettingsRepository,
 } from "./interfaces";
 
 const now = () => new Date().toISOString();
@@ -207,6 +216,37 @@ const expenses: Expense[] = [
   { id: "exp-2", branchId: "br-1", category: "Salary", amount: 25000, note: "Staff salary", actorId: "usr-2", createdAt: now() },
 ];
 
+const loyaltySettings: LoyaltySettings = {
+  id: "loyalty-1",
+  pointsPerCurrency: 1,
+  redemptionRate: 100,
+  expirationDays: 365,
+  isActive: true,
+  createdAt: now(),
+  updatedAt: now(),
+};
+
+const systemSettings: SystemSettings = {
+  id: "sys-1",
+  receiptShowLogo: true,
+  receiptFooter: "Thank you for shopping with us!",
+  receiptShowTax: true,
+  posRequireCustomer: false,
+  posAllowHoldOrders: true,
+  posDefaultPaymentMethod: "cash",
+  dateFormat: "MM/DD/YYYY",
+  timeFormat: "12h",
+  timezone: "Asia/Dhaka",
+  currency: "BDT",
+  currencySymbol: "৳",
+  updatedAt: now(),
+};
+
+const storeCreditTransactions: StoreCreditTransaction[] = [
+  { id: "sc-1", customerId: "cust-2", amount: 500, type: "issued", note: "Refund compensation", reference: "REF-001", createdAt: now() },
+  { id: "sc-2", customerId: "cust-1", amount: 200, type: "redeemed", note: "Used for purchase", reference: "ORD-001", createdAt: now() },
+];
+
 const purchaseOrders: PurchaseOrder[] = [
   {
     id: "po-1",
@@ -273,7 +313,70 @@ const auditLogs: AuditLog[] = [
   { id: "log-2", actorId: "usr-5", actorName: "Diana Inventory", action: "update", entity: "inventory", entityId: "inv-6", before: { quantity: 26 }, after: { quantity: 25 }, reason: "Stock sold", createdAt: now() },
 ];
 
-const stockTransfers: StockTransfer[] = [];
+const stockTransfers: StockTransfer[] = [
+  {
+    id: "transfer-1",
+    transferNumber: "ST-0001",
+    fromBranchId: "br-1",
+    toBranchId: "br-2",
+    items: [
+      { id: "sti-1", productVariantId: "var-1", productName: "Coca-Cola 500ml", variantName: "500ml", quantity: 50 },
+      { id: "sti-2", productVariantId: "var-3", productName: "Pepsi 500ml", variantName: "500ml", quantity: 30 },
+    ],
+    status: "completed",
+    sentBy: "usr-5",
+    receivedBy: "usr-3",
+    receivedAt: now(),
+    note: "Restocking Gulshan branch",
+    createdAt: now(),
+    updatedAt: now(),
+  },
+  {
+    id: "transfer-2",
+    transferNumber: "ST-0002",
+    fromBranchId: "br-1",
+    toBranchId: "br-2",
+    items: [
+      { id: "sti-3", productVariantId: "var-6", productName: "Samsung Phone", variantName: "128GB", quantity: 5 },
+    ],
+    status: "in_transit",
+    sentBy: "usr-5",
+    note: "Electronics transfer",
+    createdAt: now(),
+    updatedAt: now(),
+  },
+  {
+    id: "transfer-3",
+    transferNumber: "ST-0003",
+    fromBranchId: "br-2",
+    toBranchId: "br-1",
+    items: [
+      { id: "sti-4", productVariantId: "var-7", productName: "T-Shirt", variantName: "M", quantity: 20 },
+    ],
+    status: "pending",
+    sentBy: "usr-3",
+    note: "Return excess stock",
+    createdAt: now(),
+    updatedAt: now(),
+  },
+];
+
+const accounts: Account[] = [
+  { id: "acc-1", name: "Accounts Receivable", type: "receivable", branchId: "br-1", balance: 45000, isActive: true, createdAt: now(), updatedAt: now() },
+  { id: "acc-2", name: "Accounts Payable", type: "payable", branchId: "br-1", balance: 28000, isActive: true, createdAt: now(), updatedAt: now() },
+  { id: "acc-3", name: "Cash on Hand", type: "cash", branchId: "br-1", balance: 150000, isActive: true, createdAt: now(), updatedAt: now() },
+  { id: "acc-4", name: "Bank Account", type: "bank", branchId: "br-1", balance: 500000, isActive: true, createdAt: now(), updatedAt: now() },
+  { id: "acc-5", name: "Accounts Receivable - Gulshan", type: "receivable", branchId: "br-2", balance: 18000, isActive: true, createdAt: now(), updatedAt: now() },
+  { id: "acc-6", name: "Cash on Hand - Gulshan", type: "cash", branchId: "br-2", balance: 85000, isActive: true, createdAt: now(), updatedAt: now() },
+];
+
+const transactions: Transaction[] = [
+  { id: "txn-1", accountId: "acc-1", type: "debit", amount: 50000, referenceId: "ord-1", referenceType: "order", note: "Sale to John Doe", actorId: "usr-4", createdAt: now() },
+  { id: "txn-2", accountId: "acc-3", type: "credit", amount: 126, referenceId: "pay-1", referenceType: "payment", note: "Cash payment received", actorId: "usr-4", createdAt: now() },
+  { id: "txn-3", accountId: "acc-4", type: "credit", amount: 38000, referenceId: "pay-2", referenceType: "payment", note: "Card payment received", actorId: "usr-4", createdAt: now() },
+  { id: "txn-4", accountId: "acc-2", type: "credit", amount: 8400, referenceId: "po-1", referenceType: "order", note: "PO payment to Global Beverages", actorId: "usr-5", createdAt: now() },
+  { id: "txn-5", accountId: "acc-3", type: "debit", amount: 5000, referenceId: "exp-1", referenceType: "expense", note: "Electricity bill", actorId: "usr-2", createdAt: now() },
+];
 
 const returns: Return[] = [];
 
@@ -294,6 +397,9 @@ type RepoState = {
   discounts: Discount[];
   promotions: Promotion[];
   expenses: Expense[];
+  loyaltySettings: LoyaltySettings;
+  systemSettings: SystemSettings;
+  storeCreditTransactions: StoreCreditTransaction[];
   purchaseOrders: PurchaseOrder[];
   notifications: Notification[];
   auditLogs: AuditLog[];
@@ -304,6 +410,8 @@ type RepoState = {
   users: User[];
   roles: Role[];
   branches: Branch[];
+  accounts: Account[];
+  transactions: Transaction[];
 };
 
 const state: RepoState = {
@@ -321,6 +429,9 @@ const state: RepoState = {
   discounts,
   promotions,
   expenses,
+  loyaltySettings,
+  systemSettings,
+  storeCreditTransactions,
   purchaseOrders,
   notifications,
   auditLogs,
@@ -331,6 +442,8 @@ const state: RepoState = {
   users,
   roles,
   branches,
+  accounts,
+  transactions,
 };
 
 const productRepo: ProductRepository = {
@@ -712,6 +825,36 @@ const expenseRepo: ExpenseRepository = {
   },
 };
 
+const loyaltyRepo: LoyaltyRepository = {
+  async getSettings() {
+    return state.loyaltySettings ? { ...state.loyaltySettings } : null;
+  },
+  async updateSettings(data) {
+    if (!state.loyaltySettings) return null;
+    state.loyaltySettings = { ...state.loyaltySettings, ...data, updatedAt: now() };
+    return { ...state.loyaltySettings };
+  },
+};
+
+const storeCreditRepo: StoreCreditRepository = {
+  async getAll(filters) {
+    let data = [...state.storeCreditTransactions];
+    if (filters?.customerId) data = data.filter((t) => t.customerId === filters.customerId);
+    if (filters?.type) data = data.filter((t) => t.type === filters.type);
+    if (filters?.from) data = data.filter((t) => new Date(t.createdAt) >= new Date(filters.from!));
+    if (filters?.to) data = data.filter((t) => new Date(t.createdAt) <= new Date(filters.to!));
+    return data;
+  },
+  async getById(id) {
+    return state.storeCreditTransactions.find((t) => t.id === id) || null;
+  },
+  async create(transaction) {
+    const newTx: StoreCreditTransaction = { ...transaction, id: `sc-${id()}`, createdAt: now() };
+    state.storeCreditTransactions.push(newTx);
+    return newTx;
+  },
+};
+
 const refundRepo: RefundRepository = {
   async getAll(filters) {
     let data = [...state.refunds];
@@ -829,6 +972,17 @@ const businessRepo: BusinessRepository = {
   },
 };
 
+const systemSettingsRepo: SystemSettingsRepository = {
+  async getSettings() {
+    return state.systemSettings ? { ...state.systemSettings } : null;
+  },
+  async updateSettings(data) {
+    if (!state.systemSettings) return null;
+    state.systemSettings = { ...state.systemSettings, ...data, updatedAt: now() };
+    return { ...state.systemSettings };
+  },
+};
+
 const notificationRepo: NotificationRepository = {
   async getAll(filters) {
     let data = [...state.notifications];
@@ -861,6 +1015,9 @@ const auditLogRepo: AuditLogRepository = {
     if (filters?.from) data = data.filter((l) => new Date(l.createdAt) >= new Date(filters.from!));
     if (filters?.to) data = data.filter((l) => new Date(l.createdAt) <= new Date(filters.to!));
     return data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  },
+  async getById(id) {
+    return state.auditLogs.find((l) => l.id === id) || null;
   },
   async create(log) {
     const newLog: AuditLog = { ...log, id: `log-${id()}`, createdAt: now() };
@@ -951,6 +1108,55 @@ const saleRepo: SaleRepository = {
   },
 };
 
+const accountingRepo: AccountingRepository = {
+  async getAllAccounts(filters) {
+    let data = [...state.accounts];
+    if (filters?.type) data = data.filter((a) => a.type === filters.type);
+    if (filters?.branchId) data = data.filter((a) => a.branchId === filters.branchId);
+    return data;
+  },
+  async getAccountById(id) {
+    return state.accounts.find((a) => a.id === id) || null;
+  },
+  async createAccount(account) {
+    const newAccount: Account = { ...account, id: `acc-${id()}`, createdAt: now(), updatedAt: now() };
+    state.accounts.push(newAccount);
+    return newAccount;
+  },
+  async updateAccount(id, data) {
+    const idx = state.accounts.findIndex((a) => a.id === id);
+    if (idx === -1) return null;
+    state.accounts[idx] = { ...state.accounts[idx], ...data, updatedAt: now() };
+    return state.accounts[idx];
+  },
+  async getAllTransactions(filters) {
+    let data = [...state.transactions];
+    if (filters?.accountId) data = data.filter((t) => t.accountId === filters.accountId);
+    if (filters?.type) data = data.filter((t) => t.type === filters.type);
+    if (filters?.referenceType) data = data.filter((t) => t.referenceType === filters.referenceType);
+    if (filters?.from) data = data.filter((t) => new Date(t.createdAt) >= new Date(filters.from!));
+    if (filters?.to) data = data.filter((t) => new Date(t.createdAt) <= new Date(filters.to!));
+    return data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  },
+  async getTransactionById(id) {
+    return state.transactions.find((t) => t.id === id) || null;
+  },
+  async createTransaction(transaction) {
+    const newTransaction: Transaction = { ...transaction, id: `txn-${id()}`, createdAt: now() };
+    state.transactions.push(newTransaction);
+    const account = state.accounts.find((a) => a.id === transaction.accountId);
+    if (account) {
+      if (transaction.type === "debit") {
+        account.balance -= transaction.amount;
+      } else {
+        account.balance += transaction.amount;
+      }
+      account.updatedAt = now();
+    }
+    return newTransaction;
+  },
+};
+
 const repositories = {
   product: productRepo,
   category: categoryRepo,
@@ -966,6 +1172,8 @@ const repositories = {
   discount: discountRepo,
   promotion: promotionRepo,
   expense: expenseRepo,
+  loyalty: loyaltyRepo,
+  storeCredit: storeCreditRepo,
   refund: refundRepo,
   return: returnRepo,
   user: userRepo,
@@ -977,6 +1185,8 @@ const repositories = {
   purchaseOrder: purchaseOrderRepo,
   stockTransfer: stockTransferRepo,
   sale: saleRepo,
+  accounting: accountingRepo,
+  systemSettings: systemSettingsRepo,
 };
 
 export { repositories, state, business, branches, users };

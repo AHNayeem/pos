@@ -29,100 +29,8 @@ type CartItemRow = {
   imageUrl?: string;
 };
 
-const DEMO_PRODUCTS: Product[] = [
-  {
-    id: "demo-1",
-    categoryId: "cat-meals",
-    brandId: "brand-4",
-    name: "Deep Fried Wonton",
-    description: "Crispy wonton served with sauce",
-    imageUrl: "/images/product/product-01.jpg",
-    variants: [
-      { id: "demo-var-1", productId: "demo-1", name: "Regular", sku: "DW-REG", costPrice: 10, sellingPrice: 15, taxRate: 0, unit: "pcs", attributes: {}, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    ],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "demo-2",
-    categoryId: "cat-meals",
-    brandId: "brand-4",
-    name: "Stir-Fried Noodles",
-    description: "Wok tossed noodles",
-    imageUrl: "/images/product/product-02.jpg",
-    variants: [
-      { id: "demo-var-2", productId: "demo-2", name: "Regular", sku: "SFN-REG", costPrice: 14, sellingPrice: 21, taxRate: 0, unit: "pcs", attributes: {}, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    ],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "demo-3",
-    categoryId: "cat-meals",
-    brandId: "brand-4",
-    name: "Spicy Chicken Tendon",
-    description: "Spicy chicken with tendon",
-    imageUrl: "/images/product/product-03.jpg",
-    variants: [
-      { id: "demo-var-3", productId: "demo-3", name: "Regular", sku: "SCT-REG", costPrice: 20, sellingPrice: 31, taxRate: 0, unit: "pcs", attributes: {}, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    ],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "demo-4",
-    categoryId: "cat-meals",
-    brandId: "brand-4",
-    name: "Fried Rice with Pork",
-    description: "Classic pork fried rice",
-    imageUrl: "/images/product/product-04.jpg",
-    variants: [
-      { id: "demo-var-4", productId: "demo-4", name: "Regular", sku: "FRP-REG", costPrice: 26, sellingPrice: 40, taxRate: 0, unit: "pcs", attributes: {}, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    ],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toString(),
-  },
-  {
-    id: "demo-5",
-    categoryId: "cat-appetizer",
-    brandId: "brand-4",
-    name: "Sausages",
-    description: "Grilled sausages",
-    imageUrl: "/images/product/product-05.jpg",
-    variants: [
-      { id: "demo-var-5", productId: "demo-5", name: "Regular", sku: "SAU-REG", costPrice: 10, sellingPrice: 15, taxRate: 0, unit: "pcs", attributes: {}, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    ],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "demo-6",
-    categoryId: "cat-meals",
-    brandId: "brand-4",
-    name: "Lambreta Burger",
-    description: "Double patty burger",
-    imageUrl: "/images/product/product-01.jpg",
-    variants: [
-      { id: "demo-var-6", productId: "demo-6", name: "Regular", sku: "LB-REG", costPrice: 18, sellingPrice: 30, taxRate: 0, unit: "pcs", attributes: {}, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    ],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
 const CATEGORIES = [
   { id: "all", name: "All Menu", icon: "📦" },
-  { id: "cat-meals", name: "Meals", icon: "🍽️" },
-  { id: "cat-soups", name: "Soups", icon: "🥣" },
-  { id: "cat-1", name: "Beverages", icon: "🥤" },
-  { id: "cat-appetizer", name: "Appetizer", icon: "🍤" },
-  { id: "cat-5", name: "Side Dish", icon: "🍟" },
 ];
 
 const RECENT_ORDERS = [
@@ -160,15 +68,14 @@ export default function PosCashierPage() {
     Promise.all([repositories.product.getAll(), repositories.category.getAll(), repositories.customer.getAll()])
       .then(([prods, cats, custs]) => {
         if (!mounted) return;
-        const merged = [...DEMO_PRODUCTS, ...prods];
-        setProducts(merged);
+        setProducts(prods);
         setCategories(cats.map((c) => ({ id: c.id, name: c.name })));
         setCustomers(custs);
         setIsLoading(false);
       })
       .catch(() => {
         if (!mounted) return;
-        setProducts(DEMO_PRODUCTS);
+        setProducts([]);
         setIsLoading(false);
       });
     return () => {
@@ -267,8 +174,12 @@ export default function PosCashierPage() {
   };
 
   const handleOpenShift = async () => {
+    if (!user) {
+      addToast("You must be logged in to open a shift.", "error");
+      return;
+    }
     try {
-      const shiftData = await ShiftService.openShift("br-1", "usr-4", 5000);
+      const shiftData = await ShiftService.openShift(user.branchId, user.id, 5000);
       setShift(shiftData);
       addToast("Shift opened successfully", "success");
     } catch {

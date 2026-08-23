@@ -30,15 +30,19 @@ export class SaleService {
     const saleNumber = `INV-${String(Date.now()).slice(-6)}`;
     const nowIso = new Date().toISOString();
     const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const cashier = await repositories.user.getById(order.cashierId);
+    const customer = order.customerId ? await repositories.customer.getById(order.customerId) : null;
+
     const sale: Sale = {
       id: `sale-${Math.random().toString(36).slice(2, 11)}`,
       saleNumber,
       orderId: input.orderId,
       branchId: order.branchId,
       customerId: order.customerId,
-      customerName: undefined,
+      customerName: customer?.name,
       cashierId: order.cashierId,
-      cashierName: undefined,
+      cashierName: cashier?.name,
       items: order.items,
       subtotal: order.subtotal,
       taxAmount: order.taxAmount,
