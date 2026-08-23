@@ -85,6 +85,8 @@ const navItems: NavItem[] = [
       { name: "Branches", path: "/settings/branches", pro: false, permission: "branches.read" },
       { name: "Products", path: "/settings/products", pro: false, permission: "products.read" },
       { name: "Customers", path: "/settings/customers", pro: false, permission: "customers.read" },
+      { name: "Inventory", path: "/settings/inventory", pro: false, permission: "inventory.read" },
+      { name: "Suppliers", path: "/settings/suppliers", pro: false, permission: "suppliers.read" },
     ],
   },
 ];

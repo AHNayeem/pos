@@ -1,5 +1,6 @@
 import type { Cart, CartItem, Order, OrderItem, Payment } from "@/domain/types";
 import { repositories } from "@/repositories";
+import { InventoryService } from "./inventory";
 
 export { BusinessService } from "./business";
 export { BranchService } from "./branch";
@@ -7,6 +8,8 @@ export { ProductService } from "./product";
 export { CategoryService } from "./category";
 export { BrandService } from "./brand";
 export { CustomerService } from "./customer";
+export { SupplierService } from "./supplier";
+export { InventoryService } from "./inventory";
 
 export class PricingService {
   static async calculateCart(items: CartItem[], discountCode?: string): Promise<Cart> {
@@ -83,26 +86,6 @@ export class PricingService {
 
   static calculateOutstandingBalance(total: number, paid: number): number {
     return Math.max(0, total - paid);
-  }
-}
-
-export class InventoryService {
-  static async getStockLevel(variantId: string, branchId: string) {
-    const inv = await repositories.inventory.getByVariant(variantId, branchId);
-    return inv?.quantity ?? 0;
-  }
-
-  static async isInStock(variantId: string, branchId: string, quantity: number): Promise<boolean> {
-    const stock = await this.getStockLevel(variantId, branchId);
-    return stock >= quantity;
-  }
-
-  static async adjustStock(variantId: string, branchId: string, quantity: number, type: "purchase" | "sale" | "adjustment" | "transfer_in" | "transfer_out" | "return", actorId: string, referenceId?: string, note?: string) {
-    return repositories.inventory.adjustStock(variantId, branchId, quantity, type, actorId, referenceId, note);
-  }
-
-  static async getLowStockItems(branchId: string) {
-    return repositories.inventory.getAll({ branchId, lowStock: true });
   }
 }
 
